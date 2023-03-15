@@ -11,6 +11,10 @@ font = pygame.font.Font('assets/font/myFont.ttf', 32)
 
 pygame.display.set_caption("Duck Hunt")
 
+menu_img = pygame.image.load('assets/menus/mainMenu.png')
+game_over_img = pygame.image.load('assets/menus/gameOver.png')
+pause_img = pygame.image.load('assets/menus/pause.png')
+
 WIDTH = 900
 HEIGHT = 800
 screen = pygame.display.set_mode([WIDTH, HEIGHT])
@@ -28,11 +32,23 @@ points = 0
 total_shots = 0
 mode = 0
 ammo = 0
+best_freeplay = 0
+best_ammo = 0
+best_timed = 0
 time_passed = 0
 time_remaining = 0
 counter = 1
 
 shot = False
+
+clicked = False
+
+menu = True
+game_over = False
+pause = False
+
+write_values = False
+
 
 def draw_score():
     points_text = font.render(f'Points: {points}', True, 'black')
@@ -56,10 +72,12 @@ for i in range(1, 4):
     guns.append(pygame.transform.scale(pygame.image.load(f'assets/guns/{i}.png'), (100, 100)))
     if i < 3:
         for j in range(1, 4):
-            target_images[i - 1].append(pygame.transform.scale(pygame.image.load(f'assets/targets/{i}/{j}.png'), (120 - (j * 18), 80 - (j * 12))))
+            target_images[i - 1].append(pygame.transform.scale(pygame.image.load(f'assets/targets/{i}/{j}.png'),
+                                                               (120 - (j * 18), 80 - (j * 12))))
     else:
         for j in range(1, 5):
-            target_images[i - 1].append(pygame.transform.scale(pygame.image.load(f'assets/targets/{i}/{j}.png'), (120 - (j * 18), 80 - (j * 12))))
+            target_images[i - 1].append(pygame.transform.scale(pygame.image.load(f'assets/targets/{i}/{j}.png'),
+                                                               (120 - (j * 18), 80 - (j * 12))))
 
 
 def draw_gun():
@@ -109,7 +127,8 @@ def draw_level(coords):
         target_rects = [[], [], [], []]
     for i in range(len(coords)):
         for j in range(len(coords[i])):
-            target_rects[i].append(pygame.rect.Rect((coords[i][j][0] + 20, coords[i][j][1]), (60 - i * 12, 60 - i * 12)))
+            target_rects[i].append(
+                pygame.rect.Rect((coords[i][j][0] + 20, coords[i][j][1]), (60 - i * 12, 60 - i * 12)))
             screen.blit(target_images[level - 1][i], coords[i][j])
     return target_rects
 
@@ -123,7 +142,81 @@ def check_shot(targets, coords):
                 coords[i].pop(j)
                 points += 10 + 10 * (i ** 2)
 
-    return  coords
+    return coords
+
+
+def draw_menu():
+    global game_over, pause, mode, level, menu, time_passed, total_shots, points, ammo, \
+        time_remaining, best_timed, best_freeplay, best_ammo, write_values, clicked
+    game_over = False
+    pause = False
+    screen.blit(menu_img, (0, 0))
+    mouse_pos = pygame.mouse.get_pos()
+    clicks = pygame.mouse.get_pressed()
+    freeplay_button = pygame.rect.Rect((170, 524), (260, 100))
+    screen.blit(font.render(f'{best_freeplay}', True, 'black'), (340, 580))
+    ammo_button = pygame.rect.Rect((475, 524), (260, 100))
+    screen.blit(font.render(f'{best_ammo}', True, 'black'), (650, 580))
+    time_button = pygame.rect.Rect((170, 661), (260, 100))
+    screen.blit(font.render(f'{best_timed}', True, 'black'), (350, 710))
+    reset_button = pygame.rect.Rect((475, 661), (260, 100))
+    if freeplay_button.collidepoint(mouse_pos) and clicks[0] and not clicked:
+        mode = 0
+        level = 1
+        menu = False
+        time_passed = 0
+        total_shots = 0
+        points = 0
+        clicked = True
+    if ammo_button.collidepoint(mouse_pos) and clicks[0] and not clicked:
+        mode = 1
+        level = 1
+        menu = False
+        time_passed = 0
+        ammo = 81
+        total_shots = 0
+        points = 0
+        clicked = True
+    if time_button.collidepoint(mouse_pos) and clicks[0] and not clicked:
+        mode = 2
+        level = 1
+        menu = False
+        time_remaining = 40
+        time_passed = 0
+        total_shots = 0
+        points = 0
+        clicked = True
+    if reset_button.collidepoint(mouse_pos) and clicks[0] and not clicked:
+        best_freeplay = 0
+        best_ammo = 0
+        best_timed = 0
+        write_values = True
+        clicked = True
+
+
+def draw_game_over():
+    pass
+
+
+def draw_pause():
+    global level, pause, menu, points, total_shots, time_remaining, time_passed, clicked
+    screen.blit(pause_img, (0, 0))
+    mouse_pos = pygame.mouse.get_pos()
+    clicks = pygame.mouse.get_pressed()
+    resume_button = pygame.rect.Rect((170, 661), (260, 100))
+    menu_button = pygame.rect.Rect((475, 661), (260, 100))
+    if resume_button.collidepoint(mouse_pos) and clicks[0] and not clicked:
+        level = resume_level
+        pause = False
+    if menu_button.collidepoint(mouse_pos) and clicks[0] and not clicked:
+        level = 0
+        pause = False
+        menu = True
+        points = 0
+        total_shots = 0
+        time_passed = 0
+        time_remaining = 0
+        clicked = True
 
 
 one_coords = [[], [], []]
@@ -144,8 +237,6 @@ for i in range(4):
     for j in range(my_list[i]):
         three_coords[i].append((WIDTH // (my_list[i]) * j, 300 - (i * 100) + 30 * (j % 2)))
 
-
-
 run = True
 while run:
     clock.tick(FPS)
@@ -161,6 +252,15 @@ while run:
     screen.fill('black')
     screen.blit(bgs[level - 1], (0, 0))
     screen.blit(banners[level - 1], (0, HEIGHT - 200))
+    if menu:
+        level = 0
+        draw_menu()
+    if game_over:
+        level = 0
+        draw_game_over()
+    if pause:
+        level = 0
+        draw_pause()
 
     if level == 1:
         target_boxes = draw_level(one_coords)
@@ -195,6 +295,15 @@ while run:
                 total_shots += 1
                 if mode == 1:
                     ammo -= 1
+            if (670 < mouse_position[0] < 860) and (660 < mouse_position[1] < 715):
+                resume_level = level
+                pause = True
+                clicked = True
+            if (670 < mouse_position[0] < 860) and (715 < mouse_position[1] < 760):
+                menu = True
+                clicked = True
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and clicked:
+            clicked = False
 
     if level > 0:
         if target_boxes == [[], [], []] and level < 3:
