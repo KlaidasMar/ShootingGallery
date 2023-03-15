@@ -28,8 +28,27 @@ points = 0
 total_shots = 0
 mode = 0
 ammo = 0
+time_passed = 0
+time_remaining = 0
+counter = 1
 
 shot = False
+
+def draw_score():
+    points_text = font.render(f'Points: {points}', True, 'black')
+    screen.blit(points_text, (320, 660))
+    shots_text = font.render(f'Total shots: {total_shots}', True, 'black')
+    screen.blit(shots_text, (320, 687))
+    time_text = font.render(f'Time: {time_passed}', True, 'black')
+    screen.blit(time_text, (320, 714))
+    if mode == 0:
+        mode_text = font.render('Freeplay', True, 'black')
+    if mode == 1:
+        mode_text = font.render(f'Ammo: {ammo}', True, 'black')
+    if mode == 2:
+        mode_text = font.render(f'Time remaining: {time_remaining}', True, 'black')
+    screen.blit(mode_text, (320, 741))
+
 
 for i in range(1, 4):
     bgs.append(pygame.image.load(f'assets/bgs/{i}.png'))
@@ -130,6 +149,14 @@ for i in range(4):
 run = True
 while run:
     clock.tick(FPS)
+    if level != 0:
+        if counter < 60:
+            counter += 1
+        else:
+            counter = 1
+            time_passed += 1
+            if mode == 2:
+                time_remaining -= 1
 
     screen.fill('black')
     screen.blit(bgs[level - 1], (0, 0))
@@ -156,6 +183,7 @@ while run:
 
     if level > 0:
         draw_gun()
+        draw_score()
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
