@@ -361,13 +361,13 @@ while run:
                 pygame.mixer.music.play()
                 clicked = True
                 new_coords = True
-        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and clicked:
+        if event.type == pygame.MOUSEBUTTONUP and event.button == 1 and clicked:
             clicked = False
 
     if level > 0:
         if target_boxes == [[], [], []] and level < 3:
             level += 1
-        if (level == 3 and target_boxes == [[], [], []]) or (mode == 1 and ammo == 0) or (
+        if (level == 3 and target_boxes == [[], [], [], []]) or (mode == 1 and ammo == 0) or (
                 mode == 2 and time_remaining == 0):
             new_coords = True
             pygame.mixer.music.play()
