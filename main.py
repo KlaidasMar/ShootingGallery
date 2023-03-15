@@ -49,6 +49,7 @@ pause = False
 
 write_values = False
 
+new_coords = False
 
 def draw_score():
     points_text = font.render(f'Points: {points}', True, 'black')
@@ -147,7 +148,7 @@ def check_shot(targets, coords):
 
 def draw_menu():
     global game_over, pause, mode, level, menu, time_passed, total_shots, points, ammo, \
-        time_remaining, best_timed, best_freeplay, best_ammo, write_values, clicked
+        time_remaining, best_timed, best_freeplay, best_ammo, write_values, clicked, new_coords
     game_over = False
     pause = False
     screen.blit(menu_img, (0, 0))
@@ -168,6 +169,7 @@ def draw_menu():
         total_shots = 0
         points = 0
         clicked = True
+        new_coords = False
     if ammo_button.collidepoint(mouse_pos) and clicks[0] and not clicked:
         mode = 1
         level = 1
@@ -177,6 +179,7 @@ def draw_menu():
         total_shots = 0
         points = 0
         clicked = True
+        new_coords = False
     if time_button.collidepoint(mouse_pos) and clicks[0] and not clicked:
         mode = 2
         level = 1
@@ -186,12 +189,14 @@ def draw_menu():
         total_shots = 0
         points = 0
         clicked = True
+        new_coords = False
     if reset_button.collidepoint(mouse_pos) and clicks[0] and not clicked:
         best_freeplay = 0
         best_ammo = 0
         best_timed = 0
         write_values = True
         clicked = True
+        new_coords = False
 
 
 def draw_game_over():
@@ -219,24 +224,6 @@ def draw_pause():
         clicked = True
 
 
-one_coords = [[], [], []]
-two_coords = [[], [], []]
-three_coords = [[], [], [], []]
-for i in range(3):
-    my_list = targets[1]
-    for j in range(my_list[i]):
-        one_coords[i].append((WIDTH // (my_list[i]) * j, 300 - (i * 150) + 30 * (j % 2)))
-
-for i in range(3):
-    my_list = targets[2]
-    for j in range(my_list[i]):
-        two_coords[i].append((WIDTH // (my_list[i]) * j, 300 - (i * 150) + 30 * (j % 2)))
-
-for i in range(4):
-    my_list = targets[3]
-    for j in range(my_list[i]):
-        three_coords[i].append((WIDTH // (my_list[i]) * j, 300 - (i * 100) + 30 * (j % 2)))
-
 run = True
 while run:
     clock.tick(FPS)
@@ -248,6 +235,26 @@ while run:
             time_passed += 1
             if mode == 2:
                 time_remaining -= 1
+
+    if level == 1 and not new_coords:
+        one_coords = [[], [], []]
+        two_coords = [[], [], []]
+        three_coords = [[], [], [], []]
+        for i in range(3):
+            my_list = targets[1]
+            for j in range(my_list[i]):
+                one_coords[i].append((WIDTH // (my_list[i]) * j, 300 - (i * 150) + 30 * (j % 2)))
+
+        for i in range(3):
+            my_list = targets[2]
+            for j in range(my_list[i]):
+                two_coords[i].append((WIDTH // (my_list[i]) * j, 300 - (i * 150) + 30 * (j % 2)))
+
+        for i in range(4):
+            my_list = targets[3]
+            for j in range(my_list[i]):
+                three_coords[i].append((WIDTH // (my_list[i]) * j, 300 - (i * 100) + 30 * (j % 2)))
+        new_coords = True
 
     screen.fill('black')
     screen.blit(bgs[level - 1], (0, 0))
